@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cool To-Do List</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 400px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #ff4d4d;
+        }
+
+        input {
+            width: 70%;
+            padding: 10px;
+            border: 2px solid #ff4d4d;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        button {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #cc0000;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+
+        .completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        .task-group {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .task-group button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .delete-btn {
+            background: red;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .timestamp {
+            font-size: 12px;
+            color: #888;
+            margin-left: 10px;
+        }
+
+        .message {
+            margin-top: 10px;
+            font-size: 14px;
+            color: green;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🎯 My To-Do List</h2>
+        <input type="text" id="taskInput" placeholder="What do you need to do?">
+        <button onclick="addTask()">➕ Add</button>
+        <ul id="taskList"></ul>
+        <p class="message" id="message">🎉 Great job! Keep going!</p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", loadTasks);
+
+        function addTask() {
+            let taskInput = document.getElementById("taskInput");
+            let taskText = taskInput.value.trim();
+
+            if (taskText === "") {
+                alert("Oops! You need to type something.");
+                return;
+            }
+
+            let li = document.createElement("li");
+
+            li.innerHTML = `
+                <div class="task-group">
+                    <button onclick="toggleTask(this)">⭕</button>
+                    <span>${taskText}</span>
+                    <span class="timestamp"></span>
+                </div>
+                <button class="delete-btn" onclick="deleteTask(this)">🗑️</button>
+            `;
+
+            document.getElementById("taskList").appendChild(li);
+            saveTasks();
+            taskInput.value = "";
+        }
+
+        function toggleTask(button) {
+            let taskText = button.nextElementSibling;
+            let timestamp = taskText.nextElementSibling;
+            let message = document.getElementById("message");
+
+            taskText.classList.toggle("completed");
+
+            if (taskText.classList.contains("completed")) {
+                button.innerHTML = "✅";
+                let now = new Date();
+                timestamp.textContent = `✔️ Done at: ${now.toLocaleTimeString()}`;
+                message.style.display = "block";
+                setTimeout(() => message.style.display = "none", 2000);
+            } else {
+                button.innerHTML = "⭕";
+                timestamp.textContent = "";
+            }
+
+            saveTasks();
+        }
+
+        function deleteTask(button) {
+            button.parentElement.remove();
+            saveTasks();
+        }
+
+        function saveTasks() {
+            let tasks = [];
+            document.querySelectorAll("#taskList li").forEach(li => {
+                let taskText = li.querySelector("span").textContent;
+                let isCompleted = li.querySelector("span").classList.contains("completed");
+                let timestamp = li.querySelector(".timestamp").textContent;
+                tasks.push({ text: taskText, completed: isCompleted, time: timestamp });
+            });
+
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            let savedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+
+            savedTasks.forEach(task => {
+                let li = document.createElement("li");
+
+                li.innerHTML = `
+                    <div class="task-group">
+                        <button onclick="toggleTask(this)">${task.completed ? "✅" : "⭕"}</button>
+                        <span class="${task.completed ? "completed" : ""}">${task.text}</span>
+                        <span class="timestamp">${task.time}</span>
+                    </div>
+                    <button class="delete-btn" onclick="deleteTask(this)">🗑️</button>
+                `;
+
+                document.getElementById("taskList").appendChild(li);
+            });
+        }
+    </script>
+
+</body>
+</html>
